@@ -1,9 +1,8 @@
-from urllib import request
-from rest_framework import generics
+from urllib import request 
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, views, generics
 
-from .serializers import RegisterSerializer
+from .serializers import RegisterSerializer, VerifyEmailSerializer
 
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User
@@ -13,6 +12,8 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 import jwt
 from django.conf import settings
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 class RegisterAPIView(generics.GenericAPIView):
     serializer_class = RegisterSerializer
@@ -40,8 +41,14 @@ class RegisterAPIView(generics.GenericAPIView):
 
         return Response(user_data, status=status.HTTP_201_CREATED)
 
-class VerifEmail(generics.GenericAPIView):
-    def get(self):
+class VerifEmail(views.APIView):
+    serializer_class = VerifyEmailSerializer
+    token_param_config = openapi.Parameter(
+        'token', in_=openapi.IN_QUERY, description='Description', type=openapi.TYPE_STRING
+        )
+
+    @swagger_auto_schema(manual_parameters=[token_param_config])
+    def get(self, request):
         token = request.GET.get('token')
 
         try:
