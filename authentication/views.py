@@ -2,7 +2,7 @@ from urllib import request
 from rest_framework.response import Response
 from rest_framework import status, views, generics
 
-from .serializers import RegisterSerializer, VerifyEmailSerializer
+from .serializers import RegisterSerializer, VerifyEmailSerializer, LoginSerializer 
 
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User
@@ -37,7 +37,7 @@ class RegisterAPIView(generics.GenericAPIView):
         data = {'email_body':email_body, 'to_email':user.email, 
                 'email_subject': 'Verify your email'}
 
-        Util.send_email(data)
+        # Util.send_email(data)
 
         return Response(user_data, status=status.HTTP_201_CREATED)
 
@@ -62,5 +62,13 @@ class VerifEmail(views.APIView):
             return Response({'error': 'Xatolik aniqlandi'}, status=status.HTTP_400_BAD_REQUEST)
         except jwt.exceptions.DecodeError as inedtifier:
             return Response({'error': 'Tokenda xatolik'}, status=status.HTTP_400_BAD_REQUEST)
+
+class LoginAPIView(generics.GenericAPIView):
+    serializer_class = LoginSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
